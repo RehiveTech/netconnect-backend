@@ -91,47 +91,94 @@ class Lte(Connection):
                     lte_cfg = config['lte']
                     self._status['status'] = 'CONNECTING'
 
-                    pppd_params = self._pppd_params(lte_cfg['apn'],
-                                                    lte_cfg['number'],
-                                                    lte_cfg['user'],
-                                                    lte_cfg['password'])
+                    if 'wwan' in modem:
+                        error = None
+                        connected = False
+                        try:
+                            self._at_modem.ndis_connect(lte_cfg['apn'], modem['port_control'])
+                        except Exception as e:
+                            error = 'Cannot connect: ' + str(e)
 
-                    pppd_params = shlex.split(pppd_params)
+                        time.sleep(5)  # wait for connected
+                        if error is None:
+                            try:
+                                connected = self._at_modem.ndis_connected(modem['port_control'])
+                            except Exception as e:
+                                error = 'Cannot get connection status: ' + str(e)
 
-                    self._terminate_pppd()
-                    time.sleep(1)
-                    try:
-                        pppdconn = PPPConnection(*pppd_params)
-                    except Exception as e:
-                        self._status['error'] = 'Cannot connect: ' + str(e)
-                        if hasattr(e, 'output') and e.output is not None:
-                            self._status['error'] += ' pppd output: ' + e.output[-500:]
+                        if connected:
+                            if tools.gen_systemd_networkd(self.__class__.__name__, {'dhcp': True},
+                                                          ifname=modem['wwan']):
+                                os.system('/bin/ip link set dev %s up' % modem['wwan'])
+                                tools.systemd_restart('systemd-networkd')
+                                log.info('Created systemd-networkd configuration for %s' % modem['wwan'])
+
+
+                            log.info('Link layer of LTE connected')
+                            log.info('Network info: %s' % str(self._at_modem.network_info(modem['port_control'])))
+                            log.info('Signal: %s' % str(self._at_modem.signal(modem['port_control'])))
+                            self._status['status'] = 'CONNECTED'
+                            self._status['error'] = None
+                            self._ev_conn.set()  # update online status
+                            self._status['ifname'] = modem['wwan']
+                            #self._status['dns'] = pppdconn.dns()
+
+                        else:
+                            self._status['error'] = 'Cannot connect (NDIS)'
+
                     else:
-                        log.info('Link layer of LTE connected')
-                        log.info('Network info: %s' % str(self._at_modem.network_info(modem['port_control'])))
-                        log.info('Signal: %s' % str(self._at_modem.signal(modem['port_control'])))
-                        self._status['status'] = 'CONNECTED'
-                        self._status['error'] = None
-                        self._ev_conn.set()  # update online status
-                        self._status['ifname'] = 'ppp0'
-                        self._status['dns'] = pppdconn.dns()
+                        # ppp connection
+                        pppd_params = self._pppd_params(lte_cfg['apn'],
+                                                        lte_cfg['number'],
+                                                        lte_cfg['user'],
+                                                        lte_cfg['password'])
+
+                        pppd_params = shlex.split(pppd_params)
+
+                        self._terminate_pppd()
+                        time.sleep(1)
+                        try:
+                            pppdconn = PPPConnection(*pppd_params)
+                        except Exception as e:
+                            self._status['error'] = 'Cannot connect: ' + str(e)
+                            if hasattr(e, 'output') and e.output is not None:
+                                self._status['error'] += ' pppd output: ' + e.output[-500:]
+                        else:
+                            log.info('Link layer of LTE connected')
+                            log.info('Network info: %s' % str(self._at_modem.network_info(modem['port_control'])))
+                            log.info('Signal: %s' % str(self._at_modem.signal(modem['port_control'])))
+                            self._status['status'] = 'CONNECTED'
+                            self._status['error'] = None
+                            self._ev_conn.set()  # update online status
+                            self._status['ifname'] = 'ppp0'
+                            self._status['dns'] = pppdconn.dns()
 
                 else:
                     self._status['error'] = 'NO_DEVICE_DETECTED'
 
             if self._status['status'] == 'CONNECTED':
-                try:
-                    ret = pppdconn.connected()
-                except Exception as e:
-                    self._status['error'] = 'Connection interrupted: ' + str(e)
-                    if hasattr(e, 'output') and e.output is not None:
-                        self._status['error'] += ' pppd output: ' + e.output[-500:]
-                    self._status['status'] = 'NOT_CONNECTED'
-                else:
-                    self._status['error'] = None
-                    if ret is False:
-                        self._status['error'] = 'Connection interrupted'
+
+                if 'wwan' in modem:
+                    try:
+                        if not self._at_modem.ndis_connected(modem['port_control']):
+                            self._status['error'] = 'Connection interrupted'
+                            self._status['status'] = 'NOT_CONNECTED'
+                    except Exception as e:
+                        self._status['error'] = 'Connection interrupted: ' + str(e)
                         self._status['status'] = 'NOT_CONNECTED'
+                else:
+                    try:
+                        ret = pppdconn.connected()
+                    except Exception as e:
+                        self._status['error'] = 'Connection interrupted: ' + str(e)
+                        if hasattr(e, 'output') and e.output is not None:
+                            self._status['error'] += ' pppd output: ' + e.output[-500:]
+                        self._status['status'] = 'NOT_CONNECTED'
+                    else:
+                        self._status['error'] = None
+                        if ret is False:
+                            self._status['error'] = 'Connection interrupted'
+                            self._status['status'] = 'NOT_CONNECTED'
 
             if error_status != self._status['error']:
                 if self._status['error'] is not None:
@@ -185,6 +232,13 @@ class Lte(Connection):
             # special case E3372h with firmware 21.326.62.00.55 that have only two serial ports
             modem['control'] = 0
             modem['data'] = 1
+            for i in tools.netifaces():
+                if i['ifname'].startswith('wwx'):
+                    modem['wwan'] = i['ifname']
+                    break
+            else:
+                return None
+
         elif (len(ports) < modem['control'] + 1 or len(ports) < modem['data'] + 1):
             return None
 
@@ -193,6 +247,9 @@ class Lte(Connection):
                'model': modem['desc'],
                'port_control': '/dev/' + ports[modem['control']],
                'port_data': '/dev/' + ports[modem['data']]}
+
+        if 'wwan' in modem:
+            ret['wwan'] = modem['wwan']
 
         return ret
 
@@ -234,4 +291,14 @@ class Lte(Connection):
                 pass
 
     def clean(self):
-        self._terminate_pppd()
+        modem = self._get_modem()
+        if modem is not None and 'wwan' in modem:
+            try:
+                self._at_modem.ndis_disconnect(modem['port_control'])
+            except Exception:
+                pass
+            if tools.remove_networkd_file(self.__class__.__name__):
+                tools.systemd_restart('systemd-networkd')
+            os.system('/bin/ip link set dev %s down' % modem['wwan'])
+        else:
+            self._terminate_pppd()

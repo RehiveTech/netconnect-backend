@@ -140,7 +140,7 @@ def write_if_changed(filepath, content):
 
 
 def gen_systemd_networkd(name, ipv4_cfg, mac=None, networkd_path='/run/systemd/network',
-                         dhcp_server=False, metric=128):
+                         dhcp_server=False, metric=128, ifname=None):
     """Generate systemd newtork file in /run/systemd/network.
     Created file is named automatically with 'neconnect-' and postfix '.network'.
 
@@ -155,6 +155,8 @@ def gen_systemd_networkd(name, ipv4_cfg, mac=None, networkd_path='/run/systemd/n
     content += '[Match]\n'
     if mac is not None:
         content += 'MACAddress=%s\n' % mac
+    if ifname is not None:
+        content += 'Name=%s\n' % ifname
 
     content += '[Network]\n'
     dhcp = ipv4_cfg.get('dhcp', False)

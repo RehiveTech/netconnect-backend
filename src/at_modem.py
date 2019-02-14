@@ -212,3 +212,17 @@ class ATModem(object):
             return None
 
         return {'operator': res.group('operator')}
+
+    def ndis_connect(self, apn='internet', dev=None):
+        res = self.send(dev, 'AT^NDISDUP=1,1,"%s"\r\n' % apn)
+
+    def ndis_disconnect(self, dev=None):
+        res = self.send(dev, 'AT^NDISDUP=1,0')
+
+    def ndis_connected(self, dev=None):
+        res = self.send(dev, 'AT^NDISSTATQRY?', expect_ok=False)  # returns '^NDISSTATQRY: 0,,,"IPV4"'
+        # AT^NDISSTATQRY?
+        # 0 Disconnected
+        # 1 Connected
+        # 2 In connection (reported only when the device is automatically
+        return res[0][14] == '1' or res[0][14] == '2'

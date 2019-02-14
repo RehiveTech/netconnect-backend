@@ -47,7 +47,7 @@ class LTE(unittest.TestCase):
                 'name': 'ppp',
                 'metric': 300,
                 'lte': {
-                    'apn': 'internet.t-mobile.cz',
+                    'apn': 'internet',
                     'number': '*99#',
                     'user': None,
                     'password': None,
