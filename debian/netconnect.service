@@ -1,0 +1,12 @@
+[Unit]
+Description=NetConnect network connection manager
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/netconnect
+Restart=on-failure
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

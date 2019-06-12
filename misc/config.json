@@ -1,0 +1,32 @@
+{
+    "ap_key": null,
+    "ap_timeout": 60,
+    "connection_type": "lan",
+    "lan": {
+        "ipv4": {
+            "dhcp": true,
+            "dns": [
+                "8.8.8.8",
+                "8.8.4.4"
+            ],
+            "gw": "10.10.10.1",
+            "ip": "10.10.10.10",
+            "netmask": "255.255.255.0"
+        },
+        "name": "eth0"
+    },
+    "lte": {
+        "apn": "internet.t-mobile.cz",
+        "number": "*99#",
+        "password": null,
+        "user": null
+    },
+    "wifi": {
+        "ipv4": {
+            "dhcp": true
+        },
+        "key": "wifi-key",
+        "name": "wlan0",
+        "ssid": "my-wifi"
+    }
+}

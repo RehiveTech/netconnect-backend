@@ -1,0 +1,6 @@
+netconnect.*.debhelper
+netconnect.substvars
+netconnect/
+netconnect-*/
+files
+debhelper-build-stamp

@@ -1,0 +1,12 @@
+{
+    "distro": "testing", 
+    "email": "hajek@rehivetech.com", 
+    "full_name": "Pepa Hajek", 
+    "package": "netconnect", 
+    "repo_name": "debian", 
+    "short_description": "Network connection manager that takes care of WiFi, LTE and LAN connections.", 
+    "snake": "/usr/bin/python3", 
+    "url": "https://github.com/RehiveTech/netconnect-backend", 
+    "version": "0.9.0", 
+    "year": "2019"
+}

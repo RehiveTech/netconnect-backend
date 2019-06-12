@@ -1,0 +1,8 @@
+pyzmq
+pyserial
+pyroute2
+wheel
+psutil
+connexion
+flask-cors
+swagger_ui_bundle

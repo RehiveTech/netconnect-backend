@@ -1,0 +1,100 @@
+swagger: "2.0"
+info:
+  description: "aurora-netconnect API"
+  version: "1.0.0"
+  title: "aurora-netconnect"
+  contact:
+    email: "info@rehivetech.com"
+basePath: "/api"
+schemes:
+- "http"
+
+paths:
+  /config:
+    get:
+      tags:
+      - "Config"
+      summary: Return user configuration
+      operationId: run.get_config
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: Bixicon JSON config
+          schema:
+            type: object
+
+    post:
+      tags:
+      - "Config"
+      summary: Set user configuration.
+      operationId: run.set_config
+      consumes:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Set configuration"
+        required: true
+        schema:
+          type: object
+      responses:
+        200:
+          description: "Success"
+          schema:
+            type: object
+
+  /wifi-scan:
+    get:
+      tags:
+      - "Tools"
+      summary: Scan wifi networks
+      operationId: run.wifi_scan
+      responses:
+        200:
+          description: Array of scanned networks
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                ssid:
+                  type: string
+                rssi:
+                  type: integer
+                key:
+                  type: boolean
+                channel:
+                  type: integer
+        401:
+          description: "Unauthorized"
+        405:
+          description: Cannot scan wifi
+
+  /status:
+    get:
+      tags:
+      - "Status"
+      summary: Return status information
+      operationId: run.status
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: Current unit status
+          schema:
+            type: object
+
+  /refresh:
+    get:
+      tags:
+      - "Refresh AP"
+      summary: Refresh AP timer.
+      operationId: run.refresh
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: Current unit status
+          schema:
+            type: object

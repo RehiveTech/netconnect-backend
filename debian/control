@@ -1,0 +1,20 @@
+Source: netconnect
+Section: contrib/python
+Priority: extra
+Maintainer: Pepa Hajek <hajek@rehivetech.com>
+Build-Depends: debhelper (>= 9), python, python-dev, dh-virtualenv (>= 0.10), tar, dh-systemd
+Standards-Version: 3.9.5
+Homepage: https://github.com/RehiveTech/netconnect-backend
+
+Package: netconnect
+Architecture: any
+Pre-Depends: dpkg (>= 1.16.1), python2.7 | python3, ${misc:Pre-Depends}
+Depends: ${python:Depends}, ${misc:Depends}, fping (>= 3.15), ppp (>= 2.4.7), wpasupplicant (>= 2:2.4), hostapd (>= 2:2.4)
+Description: Network connection manager that takes care of WiFi, LTE and LAN connections.
+    .
+    This is a distribution of "netconnect" as a self-contained
+    Python virtualenv wrapped into a Debian package ("omnibus" package,
+    all passengers on board). The packaged virtualenv is kept in sync with
+    the host's interpreter automatically.
+    .
+    See https://github.com/spotify/dh-virtualenv for more details.
