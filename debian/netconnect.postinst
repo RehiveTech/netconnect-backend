@@ -12,7 +12,7 @@ set -e
 #   dh_venv_package         Name of the Debian package
 #   dh_venv_install_dir     Root directory for the installed virtualenv
 
-rm /etc/resolv.conf
+rm -rf /etc/resolv.conf
 ln -s /var/run/netconnect/resolv.conf /etc/resolv.conf
 
 exit 0
