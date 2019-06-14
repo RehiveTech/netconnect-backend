@@ -141,6 +141,9 @@ class ATModem(object):
         ret = False
 
         res = re.match('\+CREG: (?P<n>[0-9]),(?P<stat>[0-9]).*', res[0])
+        if res is None:
+            return None
+
         if res.group('stat') is not None:
             if res.group('stat') == '5' or res.group('stat') == '1':
                 ret = True
