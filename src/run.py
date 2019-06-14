@@ -81,7 +81,7 @@ def get_netconnect_config(d_cfg):
     """Convert app configuration to netconnect configuration
     """
     nc_cfg = {}
-    if d_cfg['connection_type'] == 'wifi':
+    if d_cfg['connection_type'] == 'wifi_client':
         wcfg = d_cfg['wifi']
         cfg = {}
         cfg['wifi_client'] = {}
