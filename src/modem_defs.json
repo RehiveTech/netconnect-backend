@@ -350,5 +350,6 @@
 "05c6:9215": {"desc": "Quectel EC20", "control": 3, "data": 2},
 "2c7c:0125": {"desc": "Quectel EC25", "control": 3, "data": 2},
 "12d1:1506": {"desc": "Huawei E367/E398/E3372", "control": 2, "data": 0 },
-"2001:7d02": {"desc": "D-Link DWM-157", "control": 1, "data": 0}
+"2001:7d02": {"desc": "D-Link DWM-157", "control": 1, "data": 0},
+"2001:7e35": {"desc": "D-Link DWM-222", "control": 2, "data": 1}
 }
